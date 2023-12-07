@@ -1,7 +1,7 @@
 version: "3"
 services:
   cryptpad:
-    image: elestio4test/cryptpad:${SOFTWARE_VERSION_TAG}
+    image: elestio/cryptpad:${SOFTWARE_VERSION_TAG}
     hostname: cryptpad
     restart: always
     container_name: cryptpad
