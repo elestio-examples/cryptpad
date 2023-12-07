@@ -1,0 +1,35 @@
+ports:
+  - protocol: "HTTPS"
+    targetProtocol: "HTTP"
+    listeningPort: "443"
+    targetPort: "3000"
+    targetIP: "172.17.0.1"
+    public: true
+    path: "/"
+    isAuth: false
+    login: ""
+    password: ""
+environments:
+  - key: "SOFTWARE_VERSION_TAG"
+    value: "latest"
+  - key: "ADMIN_EMAIL"
+    value: "[EMAIL]"
+  - key: "DOMAIN"
+    value: "[CI_CD_DOMAIN]"
+config:
+  runTime: "dockerCompose"
+  version: ""
+  framework: ""
+  buildCommand: "docker-compose build"
+  buildDir: "/"
+  runCommand: "docker-compose up -d"
+  icon: "icon.svg"
+  screenshot: "cryptpad.jpg"
+lifeCycleConfig:
+  preInstallCommand: "./scripts/preInstall.sh"
+  postInstallCommand: "./scripts/postInstall.sh"
+webUI:
+  - url: "https://[CI_CD_DOMAIN]"
+    label: "Cryptpad Admin"
+    login: "[ADMIN_EMAIL]"
+    password: "[ADMIN_PASSWORD]"

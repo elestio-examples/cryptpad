@@ -1,0 +1,38 @@
+version: "3"
+services:
+  cryptpad:
+    image: elestio4test/cryptpad:${SOFTWARE_VERSION_TAG}
+    hostname: cryptpad
+    restart: always
+    container_name: cryptpad
+    environment:
+      - CPAD_MAIN_DOMAIN=[DOMAIN]
+      - CPAD_SANDBOX_DOMAIN=sandbox-[DOMAIN]
+      - CPAD_REALIP_HEADER=X-Forwarded-For
+      - CPAD_REALIP_RECURSIVE=on
+      - CPAD_TRUSTED_PROXY=172.0.0.0/8
+      - CPAD_HTTP2_DISABLE=true
+      - CPAD_TLS_CERT=/etc/nginx/certs/cert.pem
+      - CPAD_TLS_KEY=/etc/nginx/certs/key.pem
+      - CPAD_TLS_DHPARAM=/etc/nginx/dhparam.pem
+
+    volumes:
+      - ./data/blob:/cryptpad/blob
+      - ./data/block:/cryptpad/block
+      - ./customize:/cryptpad/customize
+      - ./data/data:/cryptpad/data
+      - ./data/files:/cryptpad/datastore
+      - ./data/config.js:/cryptpad/config/config.js
+      - /root/.acme.sh/vm.openvm.cloud/fullchain.cer:/etc/nginx/certs/cert.pem
+      - /root/.acme.sh/vm.openvm.cloud/vm.openvm.cloud.key:/etc/nginx/certs/key.pem
+      - ./data/dh.pem:/etc/nginx/dhparam.pem
+      - ./data/cryptpad.conf:/etc/nginx/conf.d/cryptpad.conf
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
