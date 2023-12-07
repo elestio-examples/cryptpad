@@ -1,14 +1,14 @@
-# ports:
-#   - protocol: "HTTPS"
-#     targetProtocol: "HTTP"
-#     listeningPort: "443"
-#     targetPort: "3000"
-#     targetIP: "172.17.0.1"
-#     public: true
-#     path: "/"
-#     isAuth: false
-#     login: ""
-#     password: ""
+ports:
+  - protocol: "HTTPS"
+    targetProtocol: "HTTPS"
+    listeningPort: "443"
+    targetPort: "37443"
+    targetIP: "172.17.0.1"
+    public: true
+    path: "/"
+    isAuth: false
+    login: ""
+    password: ""
 environments:
   - key: "SOFTWARE_VERSION_TAG"
     value: "latest"

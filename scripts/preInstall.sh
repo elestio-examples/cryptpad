@@ -12,7 +12,7 @@ mkdir -p ./customize
 chown -R 4001:4001 ./data
 chown -R 4001:4001 ./customize
 
-cat > ./data/cryptpad.conf << 'EOF'
+cat <<EOT > ./data/cryptpad.conf
 server {
     listen 443 ssl;
 
@@ -22,13 +22,13 @@ server {
     real_ip_header    X-Forwarded-For;
     listen [::]:443 ssl;
 
-    set $main_domain "${DOMAIN}";
-    set $sandbox_domain "sandbox-${DOMAIN}";
+    set \$main_domain "${DOMAIN}";
+    set \$sandbox_domain "sandbox-${DOMAIN}";
 
-    set $allowed_origins "*";
+    set \$allowed_origins "*";
 
-    set $api_domain "${main_domain}";
-    set $files_domain "${main_domain}";
+    set \$api_domain "\${main_domain}";
+    set \$files_domain "\${main_domain}";
 
     # nginx doesn't let you set server_name via variables, so you need to hardcode your domains here
     server_name ${DOMAIN} sandbox-${DOMAIN};
@@ -58,7 +58,7 @@ server {
 
     add_header X-XSS-Protection "1; mode=block";
     add_header X-Content-Type-Options nosniff;
-    add_header Access-Control-Allow-Origin "${allowed_origins}";
+    add_header Access-Control-Allow-Origin "\${allowed_origins}";
     # add_header X-Frame-Options "SAMEORIGIN";
 
     # Opt out of Google's FLoC Network
@@ -74,71 +74,71 @@ server {
     error_page 404 /customize.dist/404.html;
 
     # any static assets loaded with "ver=" in their URL will be cached for a year
-    if ($args ~ ver=) {
-        set $cacheControl max-age=31536000;
+    if (\$args ~ ver=) {
+        set \$cacheControl max-age=31536000;
     }
 
 
-    if ($uri ~ ^(\/|.*\/|.*\.html)$) {
-        set $cacheControl no-cache;
+    if (\$uri ~ ^(\/|.*\/|.*\.html)\$) {
+        set \$cacheControl no-cache;
     }
 
     # Will not set any header if it is emptystring
-    add_header Cache-Control $cacheControl;
+    add_header Cache-Control \$cacheControl;
 
-    # CSS can be dynamically set inline, loaded from the same domain, or from $main_domain
-    set $styleSrc   "'unsafe-inline' 'self' https://${main_domain}";
+    # CSS can be dynamically set inline, loaded from the same domain, or from \$main_domain
+    set \$styleSrc   "'unsafe-inline' 'self' https://\${main_domain}";
 
-    set $connectSrc "'self' https://${main_domain} blob: wss://${api_domain} https://${sandbox_domain}";
+    set \$connectSrc "'self' https://\${main_domain} blob: wss://\${api_domain} https://\${sandbox_domain}";
 
     # fonts can be loaded from data-URLs or the main domain
-    set $fontSrc    "'self' data: https://${main_domain}";
+    set \$fontSrc    "'self' data: https://\${main_domain}";
 
     # images can be loaded from anywhere, though we'd like to deprecate this as it allows the use of images for tracking
-    set $imgSrc     "'self' data: blob: https://${main_domain}";
+    set \$imgSrc     "'self' data: blob: https://\${main_domain}";
 
-    set $frameSrc   "'self' https://${sandbox_domain} blob:";
+    set \$frameSrc   "'self' https://\${sandbox_domain} blob:";
 
     # specifies valid sources for loading media using video or audio
-    set $mediaSrc   "blob:";
+    set \$mediaSrc   "blob:";
 
-    set $childSrc   "https://${main_domain}";
+    set \$childSrc   "https://\${main_domain}";
 
-    set $workerSrc  "'self'";
+    set \$workerSrc  "'self'";
 
     # script-src specifies valid sources for javascript, including inline handlers
-    set $scriptSrc  "'self' resource: https://${main_domain}";
+    set \$scriptSrc  "'self' resource: https://\${main_domain}";
 
-    set $frameAncestors "'self' https://${main_domain}";
-    # set $frameAncestors "'self' https: vector:";
+    set \$frameAncestors "'self' https://\${main_domain}";
+    # set \$frameAncestors "'self' https: vector:";
 
-    set $unsafe 0;
+    set \$unsafe 0;
     # the following assets are loaded via the sandbox domain
     # they unfortunately still require exceptions to the sandboxing to work correctly.
-    if ($uri ~ ^\/(sheet|doc|presentation)\/inner.html.*$) { set $unsafe 1; }
-    if ($uri ~ ^\/common\/onlyoffice\/.*\/.*\.html.*$) { set $unsafe 1; }
+    if (\$uri ~ ^\/(sheet|doc|presentation)\/inner.html.*\$) { set \$unsafe 1; }
+    if (\$uri ~ ^\/common\/onlyoffice\/.*\/.*\.html.*\$) { set \$unsafe 1; }
 
     # everything except the sandbox domain is a privileged scope, as they might be used to handle keys
-    if ($host != $sandbox_domain) { set $unsafe 0; }
-    if ($uri ~ ^\/unsafeiframe\/inner\.html.*$) { set $unsafe 1; }
+    if (\$host != \$sandbox_domain) { set \$unsafe 0; }
+    if (\$uri ~ ^\/unsafeiframe\/inner\.html.*\$) { set \$unsafe 1; }
 
     # privileged contexts allow a few more rights than unprivileged contexts, though limits are still applied
-    if ($unsafe) {
-        set $scriptSrc "'self' 'unsafe-eval' 'unsafe-inline' resource: https://${main_domain}";
+    if (\$unsafe) {
+        set \$scriptSrc "'self' 'unsafe-eval' 'unsafe-inline' resource: https://\${main_domain}";
     }
 
     # Finally, set all the rules you composed above.
-    add_header Content-Security-Policy "default-src 'none'; child-src $childSrc; worker-src $workerSrc; media-src $mediaSrc; style-src $styleSrc; script-src $scriptSrc; connect-src $connectSrc; font-src $fontSrc; img-src $imgSrc; frame-src $frameSrc; frame-ancestors $frameAncestors";
+    add_header Content-Security-Policy "default-src 'none'; child-src \$childSrc; worker-src \$workerSrc; media-src \$mediaSrc; style-src \$styleSrc; script-src \$scriptSrc; connect-src \$connectSrc; font-src \$fontSrc; img-src \$imgSrc; frame-src \$frameSrc; frame-ancestors \$frameAncestors";
 
     location ^~ /cryptpad_websocket {
         proxy_pass http://localhost:3000;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 
         # WebSocket support (nginx 1.4)
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection upgrade;
     }
 
@@ -147,15 +147,15 @@ server {
     }
 
     location ^~ /customize/ {
-        rewrite ^/customize/(.*)$ $1 break;
-        try_files /customize/$uri /customize.dist/$uri;
+        rewrite ^/customize/(.*)\$ \$1 break;
+        try_files /customize/\$uri /customize.dist/\$uri;
     }
 
-    location ~ ^/api/.*$ {
+    location ~ ^/api/.*\$ {
         proxy_pass http://localhost:3000;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 
         # These settings prevent both NGINX and the API server
         # from setting the same headers and creating duplicates
@@ -167,8 +167,8 @@ server {
 
     # encrypted blobs are immutable and are thus cached for a year
     location ^~ /blob/ {
-        if ($request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' "${allowed_origins}";
+        if (\$request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' "\${allowed_origins}";
             add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
             add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
             add_header 'Access-Control-Max-Age' 1728000;
@@ -178,29 +178,29 @@ server {
         }
         add_header X-Content-Type-Options nosniff;
         add_header Cache-Control max-age=31536000;
-        add_header 'Access-Control-Allow-Origin' "${allowed_origins}";
+        add_header 'Access-Control-Allow-Origin' "\${allowed_origins}";
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range,Content-Length';
         add_header 'Access-Control-Expose-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range,Content-Length';
-        try_files $uri =404;
+        try_files \$uri =404;
     }
 
     location ^~ /block/ {
         add_header X-Content-Type-Options nosniff;
         add_header Cache-Control max-age=0;
-        try_files $uri =404;
+        try_files \$uri =404;
     }
 
-    location ~ ^/(register|login|settings|user|pad|drive|poll|slide|code|whiteboard|file|media|profile|contacts|todo|filepicker|debug|kanban|sheet|support|admin|notifications|teams|calendar|presentation|doc|form|report|convert|checkup)$ {
-        rewrite ^(.*)$ $1/ redirect;
+    location ~ ^/(register|login|settings|user|pad|drive|poll|slide|code|whiteboard|file|media|profile|contacts|todo|filepicker|debug|kanban|sheet|support|admin|notifications|teams|calendar|presentation|doc|form|report|convert|checkup)\$ {
+        rewrite ^(.*)\$ \$1/ redirect;
     }
 
     # Finally, serve anything the above exceptions don't govern.
-    try_files /customize/www/$uri /customize/www/$uri/index.html /www/$uri /www/$uri/index.html /customize/$uri;
+    try_files /customize/www/\$uri /customize/www/\$uri/index.html /www/\$uri /www/\$uri/index.html /customize/\$uri;
 }
-EOF
+EOT
 
-cat > ./data/config.js << 'EOF'
+cat <<EOT > ./data/config.js
 module.exports = {
 
     httpUnsafeOrigin: 'https://${DOMAIN}',
@@ -215,7 +215,7 @@ module.exports = {
     adminKeys: [
         "",
     ],
-    adminEmail: '${ADMIN_EMAIL}',
+    adminEmail: '\${ADMIN_EMAIL}',
     supportMailboxPublicKey: '',
 
     /* =====================
@@ -258,7 +258,7 @@ module.exports = {
     verbose: false,
     installMethod: 'docker',
 };
-EOF
+EOT
 chown -R 4001:4001 ./data/config.js
 
 openssl dhparam -out ./data/dh.pem 2048
