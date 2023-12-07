@@ -1,14 +1,14 @@
-ports:
-  - protocol: "HTTPS"
-    targetProtocol: "HTTP"
-    listeningPort: "443"
-    targetPort: "3000"
-    targetIP: "172.17.0.1"
-    public: true
-    path: "/"
-    isAuth: false
-    login: ""
-    password: ""
+# ports:
+#   - protocol: "HTTPS"
+#     targetProtocol: "HTTP"
+#     listeningPort: "443"
+#     targetPort: "3000"
+#     targetIP: "172.17.0.1"
+#     public: true
+#     path: "/"
+#     isAuth: false
+#     login: ""
+#     password: ""
 environments:
   - key: "SOFTWARE_VERSION_TAG"
     value: "latest"
@@ -28,8 +28,8 @@ config:
 lifeCycleConfig:
   preInstallCommand: "./scripts/preInstall.sh"
   postInstallCommand: "./scripts/postInstall.sh"
-webUI:
-  - url: "https://[CI_CD_DOMAIN]"
-    label: "Cryptpad Admin"
-    login: "[ADMIN_EMAIL]"
-    password: "[ADMIN_PASSWORD]"
+# webUI:
+#   - url: "https://[CI_CD_DOMAIN]"
+#     label: "Cryptpad Admin"
+#     login: "[ADMIN_EMAIL]"
+#     password: "[ADMIN_PASSWORD]"
