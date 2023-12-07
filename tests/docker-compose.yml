@@ -17,15 +17,15 @@ services:
       - CPAD_TLS_DHPARAM=/etc/nginx/dhparam.pem
 
     volumes:
-      - ./data/blob:/cryptpad/blob
-      - ./data/block:/cryptpad/block
-      - ./customize:/cryptpad/customize
-      - ./data/data:/cryptpad/data
-      - ./data/files:/cryptpad/datastore
+      - ${folderName}/data/blob:/cryptpad/blob
+      - ${folderName}/data/block:/cryptpad/block
+      - ${folderName}/customize:/cryptpad/customize
+      - ${folderName}/data/data:/cryptpad/data
+      - ${folderName}/data/files:/cryptpad/datastore
       - ${folderName}/config.js:/cryptpad/config/config.js
       - /root/.acme.sh/vm.elestio.app/fullchain.cer:/etc/nginx/certs/cert.pem
       - /root/.acme.sh/vm.elestio.app/vm.elestio.app.key:/etc/nginx/certs/key.pem
-      - ./data/dh.pem:/etc/nginx/dhparam.pem
+      - /opt/elestio/nginx/ssl_data/dhparam.pem:/etc/nginx/dhparam.pem
       - ${folderName}/cryptpad.conf:/etc/nginx/conf.d/cryptpad.conf
 
     ports:
